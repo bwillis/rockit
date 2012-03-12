@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+# TODO include license
+
+require 'rocketstrap/cli'
+
+Rocketstrap::Cli.start
