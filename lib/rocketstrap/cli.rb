@@ -16,7 +16,7 @@ module Rocketstrap
         rocketapp.clear_cache
       end
       rocketapp.run
-      Kernel.exec(*args)
+      Kernel.exec(*args) unless args.size == 0
     end
   end
 end

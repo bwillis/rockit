@@ -2,12 +2,11 @@ require 'digest'
 require 'fileutils'
 
 require 'rocketstrap/dsl'
+require 'rocketstrap/hash_store'
 
 module Rocketstrap
 
   class Application
-
-    CACHE_DIR = '.rocketstrap'
 
     RAILS_DEPENDENCIES = [
       {:checksum => 'Gemfile', :name => 'gemfile', :command => 'bundle'},
@@ -16,12 +15,16 @@ module Rocketstrap
     #  {:checksum => 'db/seeds.rb', :name => 'seeds', :command => 'rake db:seed'} # there is not an easy way to rerun db:seeds
     ]
 
+    def initialize(store=nil)
+      @hash_store = store || HashStore.new
+    end
+
     # Run a Rocketstrap configuration file and Rails dependency checks
     # unless turned off by configuration.
     def run(rocketfile="Rocketfile")
-      run_rails_checks = true
+      run_rails_checks = false
       if File.exists?(rocketfile)
-        rocket_dsl = Rocketstrap::Dsl.new(self)
+        rocket_dsl = Dsl.new(self)
         rocket_dsl.instance_eval(File.read(rocketfile), rocketfile)
         run_rails_checks = rocket_dsl.rails_checks_enabled
       end
@@ -33,8 +36,9 @@ module Rocketstrap
     #
     # return only if it finishes successfully
     def rails_checks
+      return
       RAILS_DEPENDENCIES.each do |dependency|
-        if_checksum_changed(dependency[:checksum], "#{dependency[:name]}_checksum") do
+        if_input_changed(dependency[:checksum], "#{dependency[:name]}_checksum") do
           system_exit_on_error(dependency[:command])
         end
       end
@@ -42,7 +46,7 @@ module Rocketstrap
 
     # Remove the cache directory
     def clear_cache
-      FileUtils.rm_rf(CACHE_DIR)
+      @hash_store.destroy
     end
 
     # Determine if the command exists on the current system (uses which). If it does
@@ -75,43 +79,41 @@ module Rocketstrap
       system_exit_on_error("ps ax | grep '#{service_name.gsub(/^(.)/, "[\\1]")}'", options)
     end
 
-    # TODO : consider caching all checksums in single file...
-    #
-    # Execute the given block if the input checksum is different from
+    def if_directory_changed(directory, &block)
+      if_string_digest_changed(Dir.glob("#{directory}/*").join(","), directory, &block)
+    end
+
+    def if_first_time(&block)
+      if_string_changed("done", "first_time", &block)
+    end
+
+    # Execute the given block if the input hash is different from
     # the output checksum.
     #
-    # input - a proc or filename
-    #         Proc - will be called and the output to_s to determine the hex digest
-    #         filename - file will be used to determine the hex digest.
-    # output_file - an output filename to store the checksum for subsequent calls. Will
-    #         be created first time if it does not exist.
+    # hash - the hash value to compare with the stored hash value
+    # input_key - the key to lookup the stored hash value
+    # block - block to execute if the hash value does not match the stored hash value
     #
     # return if the block was not executed, false, if it is executed, the return
     #         status of the block
-    def if_checksum_changed(input, output_file)
-      ret = false
-      out_path = File.join(CACHE_DIR, output_file)
-      begin
-        if input.is_a?(Proc)
-          checksum = Digest::SHA256.new.update(input.call.to_s).hexdigest
-        else
-          checksum = Digest::SHA256.file(input).hexdigest
-        end
-        current_checksum = File.exists?(out_path) ? File.read(out_path).strip : nil
-      ensure
-        if checksum != current_checksum
-          ret = yield
-          Dir.mkdir(CACHE_DIR) unless File.exists?(CACHE_DIR)
-          File.open(out_path, 'w+') do |f|
-            f.write(checksum)
-          end
-        end
+    def if_string_changed(new_value, key)
+      if new_value != @hash_store[key]
+        old_value = @hash_store[key]
+        @hash_store[key] = new_value
+        yield(key, new_value, old_value) if block_given?
       end
-      ret
     end
 
-    # TODO : think about allowing failure_callback to initiate a retry or to return success
-    #
+    # Same as if_input_changed, but creates a digest of the input
+    def if_string_digest_changed(input, input_key, &block)
+      if_string_changed(Digest::SHA256.new.update(input.to_s).hexdigest.to_s, input_key, &block)
+    end
+
+    # Same as if_input_changed, but creates a digest of the input file
+    def if_file_changed(file, &block)
+      if_string_changed(Digest::SHA256.file(file).hexdigest.to_s, file, &block)
+    end
+
     # Run system commands and if not successful exit and print out an error
     # message. Default behavior is to print output of a command when it does
     # not return success.
@@ -120,7 +122,7 @@ module Rocketstrap
     # options - 'error_message' - a message to print when command is not successful
     #           'print_command' - displays the command being run
     #           'failure_callback' - Proc to execute when the command fails
-    #           'success_callback' - Proc to execute when the command is successful
+    #           'on_success' - Proc to execute when the command is successful
     #
     # returns only true, will perform exit() when not successful
     #
@@ -129,11 +131,11 @@ module Rocketstrap
       output command if options['print_command']
       command_output = system_command(command)
       unless last_process.success?
-        options['failure_callback'].call(command, options) if options['failure_callback'].is_a?(Proc)
+        options['on_failure'].call(command, options) if options['on_failure'].is_a?(Proc)
         output options['failure_message'] || command_output
         return exit(last_process.exitstatus)
       end
-      options['success_callback'].call(command, options) if options['success_callback'].is_a?(Proc)
+      options['on_success'].call(command, options) if options['on_success'].is_a?(Proc)
       true
     end
 

@@ -2,27 +2,37 @@ require 'spec_helper'
 
 describe Rocketstrap::Application do
   before do
-    @app = Rocketstrap::Application.new
+    @app = Rocketstrap::Application.new({})
   end
 
-  describe '#if_checksum_changed' do
+  describe '#if_string_digest_changed' do
     context 'called when no previous checksum exists' do
       before do
-        File.stubs('exists?').returns(false)
-      end
-    end
-
-    context 'with a unchanged checksum' do
-      before do
-        File.stubs('exists?').returns(true)
-        File.stubs('read').returns('abc')
         digest = mock()
         digest.stubs('hexdigest').returns('abc')
         Digest::SHA256.stubs('file').returns(digest)
       end
 
       it 'executes the block' do
-        @app.if_checksum_changed('fake', 'fake_out') do
+        block_executed = false
+        @app.if_string_digest_changed('fake', 'fake_out') do
+          block_executed = true
+        end
+        block_executed.should == true
+      end
+
+    end
+
+    context 'with a unchanged checksum' do
+      before do
+        digest = mock()
+        digest.stubs('hexdigest').returns('abc')
+        Digest::SHA256.stubs('file').returns(digest)
+        @app.if_string_digest_changed('fake', 'fake_out') {}
+      end
+
+      it 'executes the block' do
+        @app.if_string_digest_changed('fake', 'fake_out') do
           fail
         end
       end
@@ -31,9 +41,6 @@ describe Rocketstrap::Application do
     context 'with a changed checksum' do
       before do
         @new_checksum = 'xyz'
-        File.stubs('exists?').returns(true)
-        File.stubs('read').returns('abc')
-        File.stubs('open').returns(true)
         digest = mock()
         digest.stubs('hexdigest').returns(@new_checksum)
         Digest::SHA256.stubs('file').returns(digest)
@@ -41,11 +48,25 @@ describe Rocketstrap::Application do
 
       it 'executes the block' do
         block_executed = false
-        @app.if_checksum_changed('fake', 'fake_out') do
+        @app.if_string_digest_changed('fake', 'fake_out') do
           block_executed = true
         end
         block_executed.should == true
       end
+    end
+  end
+
+  describe '#if_first_time' do
+    it 'runs the block the first time' do
+      block_executed = false
+      @app.if_first_time do
+        block_executed = true
+      end
+      block_executed.should == true
+    end
+    it 'does not run the block the second time' do
+      @app.if_first_time {}
+      @app.if_first_time { fail }
     end
   end
 
@@ -89,13 +110,13 @@ describe Rocketstrap::Application do
 
       it 'calls the failure callback' do
         block_called = false
-        @app.system_exit_on_error('failing command', :failure_callback => lambda { |a, b| block_called = true })
+        @app.system_exit_on_error('failing command', :on_failure => lambda { |a, b| block_called = true })
         block_called.should == true
       end
 
       it 'does not call the success callback' do
         block_called = false
-        @app.system_exit_on_error('failing command', :success_callback => lambda { |a, b| block_called = true })
+        @app.system_exit_on_error('failing command', :on_success => lambda { |a, b| block_called = true })
         block_called.should == false
       end
     end
@@ -119,13 +140,13 @@ describe Rocketstrap::Application do
 
       it 'does not call the failure callback' do
         block_called = false
-        @app.system_exit_on_error('successful command', :failure_callback => lambda{|a,b| blocked_called = true})
+        @app.system_exit_on_error('successful command', :on_failure => lambda { |a, b| blocked_called = true })
         block_called.should == false
       end
 
       it 'does call the success callback' do
         block_called = false
-        @app.system_exit_on_error('successful command', :success_callback => lambda{|a,b| block_called = true})
+        @app.system_exit_on_error('successful command', :on_success => lambda { |a, b| block_called = true })
         block_called.should == true
       end
     end
@@ -138,7 +159,7 @@ describe Rocketstrap::Application do
         File.stubs('read').with('Rocketfile').returns("rails_checks_off")
       end
       it 'does not call rails checks' do
-        @app.stubs('rails_checks').returns(lambda{fail})
+        @app.stubs('rails_checks').returns(lambda { fail })
         @app.run
       end
     end
