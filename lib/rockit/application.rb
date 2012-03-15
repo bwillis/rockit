@@ -6,6 +6,10 @@ require 'rockit/hash_store'
 
 module Rockit
 
+  def now
+    Application.new.run
+  end
+
   class Application
 
     def initialize(store=nil)
