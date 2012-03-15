@@ -6,7 +6,7 @@ describe Rockit::Application do
   end
 
   def block_should_execute
-    block = lambda {}
+    block = Proc.new {}
     block.expects(:call).once
     block
   end

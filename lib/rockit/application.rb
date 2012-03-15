@@ -68,26 +68,25 @@ module Rockit
       if_string_digest_changed(directory, Dir.glob("#{directory}/*").join(","), &block)
     end
 
-    # Execute the block if this is the first time it has been
-    # called, subsequent calls will not be executed.
+    # First time executed call the block.
     def if_first_time(&block)
       if_string_changed("first_time", "done", &block)
     end
 
-    # Same as if_input_changed, but creates a digest of the input
+    # If the digest of the input is different from the stored key, execute the block.
     def if_string_digest_changed(key, input, &block)
       if_string_changed(key, Digest::SHA256.new.update(input.to_s).hexdigest.to_s, &block)
     end
 
-    # Same as if_input_changed, but creates a digest of the input file
+    # If the digest of the file is different from the stored digest, execute the block.
     def if_file_changed(file, &block)
       if_string_changed(file, Digest::SHA256.file(file).hexdigest.to_s, &block)
     end
 
-    # Execute the given block if the input hash is different from
-    # the output checksum.
+    # Execute the given block if the input is different from
+    # the output .
     #
-    # hash - the hash value to compare with the stored hash value
+    # key - the hash key to compare with the stored hash value
     # input_key - the key to lookup the stored hash value
     # block - block to execute if the hash value does not match the stored hash value
     #
