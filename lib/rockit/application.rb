@@ -6,11 +6,11 @@ require 'rockit/hash_store'
 
 module Rockit
 
-  def now
-    Application.new.run
-  end
-
   class Application
+
+    def self.run(rockit_file)
+      Rockit::Application.new.run(rockit_file)
+    end
 
     def initialize(store=nil)
       @hash_store = store || HashStore.new
@@ -18,14 +18,9 @@ module Rockit
 
     # Run a Rockit configuration file and Rails dependency checks
     # unless turned off by configuration.
-    def run(rockitfile="Rockitfile")
-      run_rails_checks = false
-      if File.exists?(rockitfile)
-        rockit_dsl = Dsl.new(self)
-        rockit_dsl.instance_eval(File.read(rockitfile), rockitfile)
-        run_rails_checks = rockit_dsl.rails_checks_enabled
-      end
-      rails_checks if run_rails_checks
+    def run(rockit_file="RockitFile")
+      raise ArgumentError if File.exists?(rockit_file)
+      Dsl.new(self).instance_eval(File.read(rockit_file), rockit_file)
     end
 
     # Remove the cache directory
@@ -86,8 +81,8 @@ module Rockit
     # Execute the given block if the input is different from
     # the output .
     #
-    # key - the hash key to compare with the stored hash value
-    # input_key - the key to lookup the stored hash value
+    # key - the key to lookup the stored hash value
+    # new_value - the value to compare with the stored hash value
     # block - block to execute if the hash value does not match the stored hash value
     #
     # return if the block was not executed, false, if it is executed, the return

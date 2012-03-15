@@ -18,7 +18,7 @@ Include in a ruby file :
 
 ```ruby
 require 'rockit'
-Rockit.now
+Rockit::Application.run
 ```
 
 ## RockitFile Configuration
