@@ -8,10 +8,6 @@ module Rockit
 
   class Application
 
-    def self.run(rockit_file)
-      Rockit::Application.new.run(rockit_file)
-    end
-
     def initialize(store=nil)
       @hash_store = store || HashStore.new
     end
@@ -19,7 +15,7 @@ module Rockit
     # Run a Rockit configuration file and Rails dependency checks
     # unless turned off by configuration.
     def run(rockit_file="RockitFile")
-      raise ArgumentError if File.exists?(rockit_file)
+      raise ArgumentError unless File.exists?(rockit_file)
       Dsl.new(self).instance_eval(File.read(rockit_file), rockit_file)
     end
 
