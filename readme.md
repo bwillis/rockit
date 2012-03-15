@@ -2,7 +2,7 @@
 
 Rockit is a dsl to help setup, detect changes and keep your environment up-to-date so you can start working as fast as possible.
 
-## Install
+## Install - NOT AVAILABLE YET
 
 ```gem install rockit-?```
 
