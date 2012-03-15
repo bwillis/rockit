@@ -70,4 +70,6 @@ You can find [example configurations](http://github.com/bwillis/rockit/blob/mast
 
 # License
 
-TBD
+Rockit is released under the MIT license:
+
+www.opensource.org/licenses/MIT
