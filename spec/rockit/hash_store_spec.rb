@@ -45,6 +45,6 @@ describe Rockit::HashStore do
   end
 
   after do
-    @hash_store.destroy
+    @hash_store.clear
   end
 end

@@ -18,7 +18,7 @@ module Rockit
 
     # Run a Rockit configuration file and Rails dependency checks
     # unless turned off by configuration.
-    def run(rockit="Rockitfile")
+    def run(rockitfile="Rockitfile")
       run_rails_checks = false
       if File.exists?(rockitfile)
         rockit_dsl = Dsl.new(self)
@@ -30,7 +30,7 @@ module Rockit
 
     # Remove the cache directory
     def clear_cache
-      @hash_store.destroy
+      @hash_store.clear
     end
 
     # Determine if the command exists on the current system (uses which). If it does
@@ -63,12 +63,25 @@ module Rockit
       system_exit_on_error("ps ax | grep '#{service_name.gsub(/^(.)/, "[\\1]")}'", options)
     end
 
+    # If the directly file listing changes, execute the block.
     def if_directory_changed(directory, &block)
-      if_string_digest_changed(Dir.glob("#{directory}/*").join(","), directory, &block)
+      if_string_digest_changed(directory, Dir.glob("#{directory}/*").join(","), &block)
     end
 
+    # Execute the block if this is the first time it has been
+    # called, subsequent calls will not be executed.
     def if_first_time(&block)
-      if_string_changed("done", "first_time", &block)
+      if_string_changed("first_time", "done", &block)
+    end
+
+    # Same as if_input_changed, but creates a digest of the input
+    def if_string_digest_changed(key, input, &block)
+      if_string_changed(key, Digest::SHA256.new.update(input.to_s).hexdigest.to_s, &block)
+    end
+
+    # Same as if_input_changed, but creates a digest of the input file
+    def if_file_changed(file, &block)
+      if_string_changed(file, Digest::SHA256.file(file).hexdigest.to_s, &block)
     end
 
     # Execute the given block if the input hash is different from
@@ -80,22 +93,12 @@ module Rockit
     #
     # return if the block was not executed, false, if it is executed, the return
     #         status of the block
-    def if_string_changed(new_value, key)
+    def if_string_changed(key, new_value, &block)
       if new_value != @hash_store[key]
         old_value = @hash_store[key]
         @hash_store[key] = new_value
-        yield(key, new_value, old_value) if block_given?
+        block.call(key, new_value, old_value) if block_given?
       end
-    end
-
-    # Same as if_input_changed, but creates a digest of the input
-    def if_string_digest_changed(input, input_key, &block)
-      if_string_changed(Digest::SHA256.new.update(input.to_s).hexdigest.to_s, input_key, &block)
-    end
-
-    # Same as if_input_changed, but creates a digest of the input file
-    def if_file_changed(file, &block)
-      if_string_changed(Digest::SHA256.file(file).hexdigest.to_s, file, &block)
     end
 
     # Run system commands and if not successful exit and print out an error

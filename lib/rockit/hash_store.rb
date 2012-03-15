@@ -12,7 +12,7 @@ module Rockit
       @filename = filename
     end
 
-    def destroy
+    def clear
       p = File.join(@dir,@filename)
       File.delete(p) if File.exists?(p)
       Dir.rmdir(@dir) if File.exists?(@dir)
