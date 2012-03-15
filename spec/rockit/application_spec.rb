@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe Rocketstrap::Application do
+describe Rockit::Application do
   before do
-    @app = Rocketstrap::Application.new({})
+    @app = Rockit::Application.new({})
   end
 
   describe '#if_string_digest_changed' do
@@ -150,20 +150,6 @@ describe Rocketstrap::Application do
         block_called.should == true
       end
     end
-  end
-
-  describe '#run' do
-    context 'when called a configuration file turns off rails dep' do
-      before do
-        File.stubs('exists?').with('Rocketfile').returns(true)
-        File.stubs('read').with('Rocketfile').returns("rails_checks_off")
-      end
-      it 'does not call rails checks' do
-        @app.stubs('rails_checks').returns(lambda { fail })
-        @app.run
-      end
-    end
-
   end
 
 end

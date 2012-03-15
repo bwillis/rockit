@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe Rocketstrap::HashStore do
+describe Rockit::HashStore do
 
   before do
-    @hash_store = Rocketstrap::HashStore.new
+    @hash_store = Rockit::HashStore.new
   end
 
 

@@ -1,3 +1,3 @@
-module Rocketstrap
+module Rockit
   VERSION = "0.0.1"
 end

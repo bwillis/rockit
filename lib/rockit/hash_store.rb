@@ -1,8 +1,8 @@
-module Rocketstrap
+module Rockit
 
   class HashStore
 
-    DIR = '.rocketstrap'
+    DIR = '.rockit'
     FILE = 'hash'
 
     attr_accessor :dir, :filename

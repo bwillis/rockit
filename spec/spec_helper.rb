@@ -1,7 +1,7 @@
 require 'bundler'
 Bundler.require
 
-require 'rocketstrap'
+require 'rockit'
 require 'rspec'
 
 #require 'active_support/string_inquirer'

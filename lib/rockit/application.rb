@@ -1,47 +1,27 @@
 require 'digest'
 require 'fileutils'
 
-require 'rocketstrap/dsl'
-require 'rocketstrap/hash_store'
+require 'rockit/dsl'
+require 'rockit/hash_store'
 
-module Rocketstrap
+module Rockit
 
   class Application
-
-    RAILS_DEPENDENCIES = [
-      {:checksum => 'Gemfile', :name => 'gemfile', :command => 'bundle'},
-      {:checksum => lambda { '1' }, :name => 'db_create', :command => 'rake db:create'},
-      {:checksum => lambda { Dir.glob('db/migrate/*') }, :name => 'db_migrate', :command => 'rake db:migrate'},
-    #  {:checksum => 'db/seeds.rb', :name => 'seeds', :command => 'rake db:seed'} # there is not an easy way to rerun db:seeds
-    ]
 
     def initialize(store=nil)
       @hash_store = store || HashStore.new
     end
 
-    # Run a Rocketstrap configuration file and Rails dependency checks
+    # Run a Rockit configuration file and Rails dependency checks
     # unless turned off by configuration.
-    def run(rocketfile="Rocketfile")
+    def run(rockit="Rockitfile")
       run_rails_checks = false
-      if File.exists?(rocketfile)
-        rocket_dsl = Dsl.new(self)
-        rocket_dsl.instance_eval(File.read(rocketfile), rocketfile)
-        run_rails_checks = rocket_dsl.rails_checks_enabled
+      if File.exists?(rockitfile)
+        rockit_dsl = Dsl.new(self)
+        rockit_dsl.instance_eval(File.read(rockitfile), rockitfile)
+        run_rails_checks = rockit_dsl.rails_checks_enabled
       end
       rails_checks if run_rails_checks
-    end
-
-    # Run default Rails dependency checks. If one of the dependencies fail, it will
-    # hard exit printing the output of the failure.
-    #
-    # return only if it finishes successfully
-    def rails_checks
-      return
-      RAILS_DEPENDENCIES.each do |dependency|
-        if_input_changed(dependency[:checksum], "#{dependency[:name]}_checksum") do
-          system_exit_on_error(dependency[:command])
-        end
-      end
     end
 
     # Remove the cache directory

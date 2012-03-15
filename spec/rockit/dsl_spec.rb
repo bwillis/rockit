@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Rocketstrap::Dsl do
+describe Rockit::Dsl do
 
   describe '' do
 

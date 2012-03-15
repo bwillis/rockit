@@ -1,5 +1,5 @@
 require 'fileutils'
-module Rocketstrap
+module Rockit
   class Dsl
 
     attr_reader :rails_checks_enabled
