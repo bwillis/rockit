@@ -1,4 +1,4 @@
-# Rockit
+# Rockit [![Build Status](https://secure.travis-ci.org/bwillis/rockit.png?branch=master)](http://travis-ci.org/bwillis/rockit)
 
 Rockit is a dsl to help setup, detect changes and keep your environment up-to-date.
 
