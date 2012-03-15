@@ -64,7 +64,7 @@ end
 
 ### Documentation and Examples
 
-Documentation is available http://rubydoc.info/gems/vcr/frames
+Documentation is available http://rubydoc.info/gems/bwillis/rockit/frames
 
 You can find [example configurations](http://github.com/bwillis/rockit/blob/master/example/Rockitfile)
 
