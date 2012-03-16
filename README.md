@@ -48,10 +48,6 @@ if_service_not_running "mysql" do
 end
 ```
 
-### Changes
-
-Applications environments are always changing and your local environment needs to react to them. For instance, when working in a rails team, migrations and gems are often changed and need to be updated. Add the following to your configurtion to detect changes and automatically keep stay up-to-date :
-
 ```ruby
 if_directory_changed "db/migrate" do
   run "rake db:migrate"
@@ -61,6 +57,11 @@ if_file_changed "Gemfile" do
   run "bundle"
 end
 ```
+
+### Changes
+
+Applications environments are always changing and your local environment needs to react to them. For instance, when working in a rails team, migrations and gems are often changed and need to be updated. Add the following to your configurtion to detect changes and automatically keep stay up-to-date :
+
 
 ### Documentation and Examples
 
