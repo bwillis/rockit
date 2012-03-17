@@ -1,9 +1,9 @@
-# Rockitfile
+# RockitFile
 
 ###### Require Commands ######
 
 # command 'convert' is equivalent to
-if_command_missing('convert') do
+if_command_missing "convert" do
   puts "required command 'convert' is not available."
   exit
 end
@@ -11,47 +11,41 @@ end
 ###### Required Service ######
 
 # service 'mysql' is equivalent to
-if_service_not_running("mysql") do
+if_service_not_running "mysql" do
   puts "required service 'mysql' is not running."
   exit
 end
 
 #service "redis" is equivalent to
-if_service_not_running("redis") do
+if_service_not_running "redis" do
   puts "required service 'redis' is not running."
   exit
 end
 
 #service 'memcache' is equivalent to
-if_service_not_running("memcache") do
+if_service_not_running "memcache" do
   puts "required service 'memcache' is not running."
   exit
 end
 
 ###### Rails Checks ######
 
-# More advanced, but slower db creation check
-# require 'mysql2'
-# begin
-#   Mysql2::Client.new(:host => "localhost", :username => "root").query("use app_development")
-# rescue Mysql2::Error
-#   run "rake db:create"
-# end
+if_file_changed "Gemfile" do
+  run "bundle"
+end
+
 if_first_time do
   run "rake db:create"
 end
 
-if_directory_changed("db/migrate") do
+if_directory_changed "db/migrate" do
   run "rake db:migrate"
 end
 
-if_file_changed("db/seeds.rb") do
+if_file_changed "db/seeds.rb" do
   puts "Seeds file has changed, press 'y' if you want to run rake db:reset:"
   if gets.chomp == 'y'
     run "rake db:reset"
+    run "rake db:seed"
   end
-end
-
-if_file_changed("Gemfile") do
-  run "bundle"
 end
