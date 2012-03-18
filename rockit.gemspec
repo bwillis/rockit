@@ -7,8 +7,8 @@ Gem::Specification.new do |s|
   s.version     = Rockit::VERSION
   s.authors     = ["Ben Willis"]
   s.email       = ["benjamin.willis@gmail.com"]
-  s.homepage    = ""
-  s.summary     = %q{Get your dependencies and rails environment ready fast.}
+  s.homepage    = "https://github.com/bwillis/rockit"
+  s.summary     = %q{Rockit is a way to manage your external dependencies and keep your environment up to date.}
   s.description = %q{Check and verify external project and rails specific project dependencies. The script will cache results to ensure quick script execution each time.}
 
   s.rubyforge_project = "rockit"

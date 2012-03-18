@@ -14,7 +14,7 @@ module Rockit
 
     # Run a Rockit configuration file and Rails dependency checks
     # unless turned off by configuration.
-    def run(rockit_file="RockitFile")
+    def run(rockit_file="Rockitfile")
       raise ArgumentError unless File.exists?(rockit_file)
       Dsl.new(self).instance_eval(File.read(rockit_file), rockit_file)
     end
