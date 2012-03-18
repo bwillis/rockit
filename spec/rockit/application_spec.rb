@@ -15,6 +15,27 @@ describe Rockit::Application do
     lambda { |*args| fail }
   end
 
+  describe '#run' do
+    context 'running without a configuration file available' do
+      before do
+        File.exists?('Rockitfile').should_not be
+      end
+      it 'does raises an argument error' do
+        lambda{ @app.run }.should raise_error
+      end
+    end
+    context 'running with a configuration file' do
+      before do
+        File.stubs(:exists?).returns(false)
+        File.stubs(:exists?).with('Rockitfile.rb').returns(true)
+        File.stubs(:read).with('Rockitfile.rb').returns("")
+      end
+      it 'does not raise an argument error' do
+        lambda{ @app.run }.should_not raise_error
+      end
+    end
+  end
+
   describe '#clear_cache' do
     context 'when calling clear cache' do
       before do
