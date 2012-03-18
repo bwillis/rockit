@@ -1,14 +1,15 @@
-# Rockitfile
+#!/usr/bin/env ruby
+
+# Example Rockitfile Configuration
 
 ###### Require Commands ######
 
 # command 'convert' is equivalent to
 if_command_missing "convert" do
-  puts "required command 'convert' is not available."
-  exit
+  run "brew install imagemagick"
 end
 
-###### Required Service ######
+###### Required Services ######
 
 # service 'mysql' is equivalent to
 if_service_not_running "mysql" do

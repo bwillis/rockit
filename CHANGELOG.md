@@ -1,6 +1,10 @@
 # Current changes
 
  - Adding additional default configuration files, mimicing rake behavior
+ - Avoid failing for [if_service_not_running, if_command_missing] if the block returns true
+ - Add verbose mode to print all commands, accessible from the dsl :
+  - ```verbose_on```
+  - ```verbose_off```
 
 # 0.1.0 March 18, 2012
 

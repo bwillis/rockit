@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Rockit::Application do
   before do
     @app = Rockit::Application.new({})
+    @app.stubs(:output)
   end
 
   def block_should_execute
@@ -21,7 +22,7 @@ describe Rockit::Application do
         File.exists?('Rockitfile').should_not be
       end
       it 'does raises an argument error' do
-        lambda{ @app.run }.should raise_error
+        lambda { @app.run }.should raise_error
       end
     end
     context 'running with a configuration file' do
@@ -31,7 +32,7 @@ describe Rockit::Application do
         File.stubs(:read).with('Rockitfile.rb').returns("")
       end
       it 'does not raise an argument error' do
-        lambda{ @app.run }.should_not raise_error
+        lambda { @app.run }.should_not raise_error
       end
     end
   end
@@ -46,6 +47,37 @@ describe Rockit::Application do
 
       it 'resets cache for first time' do
         @app.if_first_time &block_should_execute
+      end
+    end
+  end
+
+  describe '#service' do
+    context 'when querying an unstarted service with a retry failure block' do
+      before do
+        last_process = mock()
+        @app.stubs(:last_process).returns(last_process)
+        last_process.stubs(:success?).returns(false,true)
+      end
+
+      it 'does not call system exit' do
+        @app.stubs(:exit).returns { fail }
+        @app.service('test', {:on_failure => lambda{|*a| true } })
+      end
+    end
+
+  end
+
+  describe '#command' do
+    context 'when executing a missing command and executing a retry failure block' do
+      before do
+        last_process = mock()
+        @app.stubs(:last_process).returns(last_process)
+        last_process.stubs(:success?).returns(false,true)
+      end
+
+      it 'does not call system exit' do
+        @app.stubs(:exit).returns { fail }
+        @app.command('test', {:on_failure => lambda{|*a| true } })
       end
     end
   end
@@ -175,6 +207,14 @@ describe Rockit::Application do
         @app.stubs('last_process').returns(@last_process)
       end
 
+      context 'with verbose on' do
+        it 'calls output event with print_command off' do
+          @app.expects('output')
+          @app.debug(true)
+          @app.system_exit_on_error('failing command', {'print_command' => false})
+        end
+      end
+
       it 'calls exit' do
         @app.unstub('exit')
         lambda { @app.system_exit_on_error('failing command') }.should raise_error SystemExit
@@ -201,16 +241,22 @@ describe Rockit::Application do
         @app.system_exit_on_error('failing command', :failure_message => new_message)
       end
 
-      it 'calls the failure callback' do
-        block_called = false
-        @app.system_exit_on_error('failing command', :on_failure => lambda { |a, b| block_called = true })
-        block_called.should == true
+      context 'with a failure callback' do
+        it 'calls the failure callback' do
+          @app.system_exit_on_error('failing command', :on_failure => block_should_execute)
+        end
+        context 'that returns true' do
+          it 'does not call exit' do
+            @app.stubs(:exit).with { fail }
+          end
+          it 'does not return failure' do
+            @app.system_exit_on_error('failing command', :on_failure => lambda{ |*a| true } ).should == true
+          end
+        end
       end
 
       it 'does not call the success callback' do
-        block_called = false
-        @app.system_exit_on_error('failing command', :on_success => lambda { |a, b| block_called = true })
-        block_called.should == false
+        @app.system_exit_on_error('failing command', :on_success => block_should_not_execute)
       end
     end
 
@@ -220,6 +266,24 @@ describe Rockit::Application do
         @app.stubs('output')
         @last_process = mock()
         @last_process.stubs(:success?).returns(true)
+      end
+
+      context 'with verbose on' do
+        it 'calls output event with print_command off' do
+          @app.expects('output')
+          @app.debug(true)
+          @app.system_exit_on_error('successful command', {'print_command' => false})
+        end
+
+        it 'can be turned on and off between calls' do
+          @app.debug(true)
+          @app.expects('output')
+          @app.system_exit_on_error('successful command', {'print_command' => false})
+
+          @app.debug(false)
+          @app.stubs('output').returns { fail }
+          @app.system_exit_on_error('successful command', {'print_command' => false})
+        end
       end
 
       it 'does not exit' do
@@ -232,15 +296,11 @@ describe Rockit::Application do
       end
 
       it 'does not call the failure callback' do
-        block_called = false
-        @app.system_exit_on_error('successful command', :on_failure => lambda { |a, b| blocked_called = true })
-        block_called.should == false
+        @app.system_exit_on_error('successful command', :on_failure => block_should_not_execute)
       end
 
       it 'does call the success callback' do
-        block_called = false
-        @app.system_exit_on_error('successful command', :on_success => lambda { |a, b| block_called = true })
-        block_called.should == true
+        @app.system_exit_on_error('successful command', :on_success => block_should_execute)
       end
     end
   end

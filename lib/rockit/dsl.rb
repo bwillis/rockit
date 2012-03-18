@@ -6,6 +6,14 @@ module Rockit
       @app = app
     end
 
+    def verbose_on
+      @app.debug(true)
+    end
+
+    def verbose_off
+      @app.debug(false)
+    end
+
     def command(command, options={})
       @app.command(command, options)
     end

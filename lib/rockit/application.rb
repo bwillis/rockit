@@ -12,6 +12,11 @@ module Rockit
 
     def initialize(store=nil)
       @hash_store = store || HashStore.new
+      @debug = false
+    end
+
+    def debug(val=true)
+      @debug = val
     end
 
     # Run a Rockit configuration file and Rails dependency checks
@@ -36,8 +41,8 @@ module Rockit
     # return only if it finishes successfully
     def command(command, options)
       options = {
-        'print_command' => false,
-        'failure_message' => "required command '#{command}' is not available."
+          'print_command' => false,
+          'failure_message' => "required command '#{command}' is not available."
       }.merge(string_keys(options))
       system_exit_on_error("which #{command}", options)
     end
@@ -51,8 +56,8 @@ module Rockit
     # return only if it finishes successfully
     def service(service_name, options={})
       options = {
-        'print_command' => false,
-        'failure_message' => "required service '#{service_name}' is not running."
+          'print_command' => false,
+          'failure_message' => "required service '#{service_name}' is not running."
       }.merge(string_keys(options))
       system_exit_on_error("ps ax | grep '#{service_name.gsub(/^(.)/, "[\\1]")}'", options)
     end
@@ -101,17 +106,20 @@ module Rockit
     # command - the system command you want to execute
     # options - 'error_message' - a message to print when command is not successful
     #           'print_command' - displays the command being run
-    #           'failure_callback' - Proc to execute when the command fails
+    #           'failure_callback' - Proc to execute when the command fails. If a callback returns
+    #             true then it will avoid
     #           'on_success' - Proc to execute when the command is successful
     #
     # returns only true, will perform exit() when not successful
     #
     def system_exit_on_error(command, options={})
       options = {'print_command' => true}.merge(string_keys(options))
-      output command if options['print_command']
+      output command if options['print_command'] || @debug
       command_output = system_command(command)
+      output command_output if @debug
       unless last_process.success?
-        options['on_failure'].call(command, options) if options['on_failure'].is_a?(Proc)
+        result = options['on_failure'].call(command, options) if options['on_failure'].is_a?(Proc)
+        return true if result
         output options['failure_message'] || command_output
         return exit(last_process.exitstatus)
       end
