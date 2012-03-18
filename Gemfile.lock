@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    rockit (0.1.0)
+    rockit-now (0.1.0)
 
 GEM
   remote: http://rubygems.org/
@@ -26,5 +26,5 @@ PLATFORMS
 DEPENDENCIES
   mocha
   rake
-  rockit!
+  rockit-now!
   rspec

@@ -4,7 +4,7 @@ Rockit is a dsl to help setup, detect changes and keep your environment up-to-da
 
 ## Install - NOT AVAILABLE YET
 
-```gem install rockit-?```
+```gem install rockit-now```
 
 ## How to use
 

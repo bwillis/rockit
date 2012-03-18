@@ -3,7 +3,7 @@ $:.push File.expand_path("../lib", __FILE__)
 require "rockit/version"
 
 Gem::Specification.new do |s|
-  s.name        = "rockit"
+  s.name        = "rockit-now"
   s.version     = Rockit::VERSION
   s.authors     = ["Ben Willis"]
   s.email       = ["benjamin.willis@gmail.com"]
