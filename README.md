@@ -2,7 +2,7 @@
 
 Rockit is a dsl to help setup, detect changes and keep your environment up-to-date so you can start working as fast as possible.
 
-## Install - NOT AVAILABLE YET
+## Install
 
 ```gem install rockit-now```
 
@@ -18,12 +18,12 @@ Include in a ruby file :
 
 ```ruby
 require 'rockit'
-Rockit::Application.run
+Rockit::Application.new.run
 ```
 
 ## RockitFile Configuration
 
-Rockit requires a RockitFile for configuration. This is where you use ruby code and some helpful methods to define your environment. It is highly recommended that you commit your configuration to ensure quick and easy setup.
+Rockit requires a Rockitfile for configuration. This is where you use ruby code and some helpful methods to define your environment. It is highly recommended that you commit your configuration to ensure quick and easy setup.
 
 ### Commands and Services
 
@@ -53,20 +53,20 @@ end
 Applications environments are always changing and your local environment needs to react to them. For instance, when working in a rails team, migrations and gems are often changed and need to be updated. Add the following to your configurtion to detect changes and automatically keep stay up-to-date :
 
 ```ruby
-if_directory_changed "db/migrate" do
-  run "rake db:migrate"
-end
-
 if_file_changed "Gemfile" do
   run "bundle"
+end
+
+if_directory_changed "db/migrate" do
+  run "rake db:migrate"
 end
 ```
 
 ### Documentation and Examples
 
-Documentation is available http://rubydoc.info/github/bwillis/rockit/master/frames
+ - Code docs are available http://rubydoc.info/github/bwillis/rockit/master/frames
 
-You can find [example configurations](http://github.com/bwillis/rockit/blob/master/example/Rockitfile)
+ - [example configurations](http://github.com/bwillis/rockit/blob/master/example/Rockitfile)
 
 # License
 
