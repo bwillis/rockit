@@ -8,13 +8,15 @@ module Rockit
 
   class Application
 
-    CONFIG_DEFAULTS = ['rockitfile', 'Rockitfile', 'rockitfile.rb', 'Rockitfile.rb']
+    # Default configuration file names
+    CONFIG_FILES = ['rockitfile', 'Rockitfile', 'rockitfile.rb', 'Rockitfile.rb']
 
     def initialize(store=nil)
       @hash_store = store || HashStore.new
       @debug = false
     end
 
+    # Turn on debugging
     def debug(val=true)
       @debug = val
     end
@@ -22,8 +24,8 @@ module Rockit
     # Run a Rockit configuration file and Rails dependency checks
     # unless turned off by configuration.
     def run
-      rockit_file = CONFIG_DEFAULTS.select { |f| File.exists?(f) }.first
-      raise ArgumentError "No Rockitfile found (looking for: #{CONFIG_DEFAULTS.join(',')})" unless rockit_file
+      rockit_file = CONFIG_FILES.select { |f| File.exists?(f) }.first
+      raise ArgumentError "No Rockitfile found (looking for: #{CONFIG_FILES.join(',')})" unless rockit_file
       Dsl.new(self).instance_eval(File.read(rockit_file), rockit_file)
     end
 
