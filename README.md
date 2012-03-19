@@ -67,7 +67,7 @@ end
 
 ### Documentation and Examples
 
- - Code docs are available http://rubydoc.info/github/bwillis/rockit/master/frames
+ - Code docs are available http://rubydoc.info/gems/rockit-now/0.2.0/frames
 
  - [example configurations](http://github.com/bwillis/rockit/blob/master/example/Rockitfile)
 
