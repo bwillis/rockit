@@ -1,6 +1,4 @@
-#!/usr/bin/env ruby
-
-# Example Rockitfile Configuration
+# Example Rockitfile Configuration -*-ruby-*-
 
 ###### Require Commands ######
 
