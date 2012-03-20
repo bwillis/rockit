@@ -67,7 +67,7 @@ end
 
 ### Documentation and Examples
 
- - Code docs are available http://rubydoc.info/gems/rockit-now/0.2.0/frames
+ - Code docs are available http://rubydoc.info/gems/rockit-now/0.2.0/frames or you can just type ```rspec spec -f d``` to get a test based descriptions of the api
 
  - [example configurations](http://github.com/bwillis/rockit/blob/master/example/Rockitfile)
 
